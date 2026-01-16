@@ -13,7 +13,7 @@ npm install @falcondev-oss/trpc-typed-form-data
 ### Server
 
 ```ts
-import { typedFormDataMiddleware, typedFormData } from '@falcondev-oss/trpc-typed-formdata/server'
+import { typedFormData, typedFormDataMiddleware } from '@falcondev-oss/trpc-typed-formdata/server'
 import { initTRPC } from '@trpc/server'
 import { z } from 'zod'
 
