@@ -1,0 +1,73 @@
+{
+  "name": "@falcondev-oss/trpc-typed-form-data",
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.25.0",
+  "description": "Type-safe integration of FormData with tRPC using Standard Schema.",
+  "license": "MIT",
+  "repository": "github:falcondev-oss/trpc-typed-form-data",
+  "bugs": {
+    "url": "https://github.com/falcondev-oss/trpc-typed-form-data/issues"
+  },
+  "keywords": [
+    "trpc",
+    "formdata",
+    "typescript",
+    "standard-schema",
+    "standardschema"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      "./package.json": "./package.json",
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs",
+        "default": "./dist/index.mjs"
+      },
+      "./client": {
+        "types": "./dist/client.d.mts",
+        "import": "./dist/client.mjs",
+        "default": "./dist/client.mjs"
+      },
+      "./server": {
+        "types": "./dist/server.d.mts",
+        "import": "./dist/server.mjs",
+        "default": "./dist/server.mjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "24",
+    "pnpm": "10"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint --cache . && prettier --check --cache .",
+    "lint:ci": "eslint --cache --cache-strategy content . && prettier --check --cache --cache-strategy content .",
+    "lint:fix": "eslint --fix --cache . && prettier --write --cache ."
+  },
+  "peerDependencies": {
+    "@trpc/client": "^11.8.1",
+    "@trpc/server": "^11.8.1"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "^1.1.0",
+    "type-fest": "^5.4.1"
+  },
+  "devDependencies": {
+    "@falcondev-oss/configs": "^5.0.2",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
+    "tsdown": "0.20.0-beta.3",
+    "typescript": "^5.9.3"
+  }
+}
