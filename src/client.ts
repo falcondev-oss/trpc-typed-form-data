@@ -1,7 +1,7 @@
 import type { TRPCLink } from '@trpc/client'
 import type { TransformerOptions } from '@trpc/client/unstable-internals'
 import type { AnyTRPCRouter } from '@trpc/server'
-import type { ConditionalPick } from 'type-fest'
+import type { ConditionalPick, IsEmptyObject } from 'type-fest'
 import type { TypedFormData } from '.'
 import { isFormData } from '@trpc/client'
 import { getTransformer } from '@trpc/client/unstable-internals'
@@ -12,9 +12,12 @@ export function createTypedFormData<
   T extends object,
   Files extends ConditionalPick<T, File | null | File[] | undefined>,
   Data extends Omit<T, keyof Files>,
->(data: Data, files: Files) {
+>(
+  ...[files, data]: IsEmptyObject<Data> extends true ? [files: Files] : [files: Files, data: Data]
+) {
   const formData = new FormData()
-  ;(formData as FormData & { [typedFormDataSymbol]: Data })[typedFormDataSymbol] = data
+  ;(formData as FormData & { [typedFormDataSymbol]: Data })[typedFormDataSymbol] =
+    data ?? ({} as Data)
 
   for (const [key, value] of Object.entries(files) as [
     keyof Files & string,
