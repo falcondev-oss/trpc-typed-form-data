@@ -1,7 +1,7 @@
 {
   "name": "@falcondev-oss/trpc-typed-form-data",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "packageManager": "pnpm@10.25.0",
   "description": "Type-safe integration of FormData with tRPC using Standard Schema.",
   "license": "MIT",
