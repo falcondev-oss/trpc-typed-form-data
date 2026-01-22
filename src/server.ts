@@ -1,20 +1,18 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { TRPCRootObject } from '@trpc/server'
-import type { TypedFormData } from './internal'
+import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 import { TRANSFER_DATA_KEY, typedFormDataSymbol } from './internal'
 export type { TypedFormData } from './internal'
 
-function parseFormDataFiles(formData: FormData) {
+function parseFormDataFiles(formData: FormData, fileArrayKeys: string[]) {
   const output = {} as Record<string, File | File[] | null | undefined>
-  for (const [key, value] of formData.entries()) {
-    if (value === 'null') output[key] = null
-    else if (value === 'undefined') output[key] = undefined
-    else if (value instanceof File) {
-      const existing = output[key]
-      if (Array.isArray(existing)) output[key] = [...existing, value]
-      else if (existing) output[key] = [existing, value]
-      else output[key] = value
-    }
+
+  for (const key of formData.keys()) {
+    if (output[key]) continue
+
+    output[key] = (
+      fileArrayKeys.includes(key) ? formData.getAll(key) : formData.get(key)
+    ) as File | null
   }
 
   return output
@@ -38,22 +36,22 @@ export function typedFormData<S extends StandardSchemaV1<object>>(
             ],
           }
 
-        const parsedData = (value as FormData & { [typedFormDataSymbol]?: object })[
-          typedFormDataSymbol
-        ]
-        if (!parsedData)
+        const payload = (
+          value as FormData & { [typedFormDataSymbol]?: TypedFormDataSymbolPayload }
+        )[typedFormDataSymbol]
+        if (!payload)
           return {
             issues: [
               {
                 message:
-                  'FormData does not contain typed data. Make sure to create it using `createTypedFormData` frontend helper and add `typedFormDataMiddleware` middleware to your TRPC router.',
+                  'FormData does not contain typed payload. Make sure to create it using `createTypedFormData` frontend helper and add `typedFormDataMiddleware` middleware to your TRPC router.',
               },
             ],
           }
 
         return schema['~standard'].validate({
-          ...parsedData,
-          ...parseFormDataFiles(value),
+          ...payload.data,
+          ...parseFormDataFiles(value, payload.fileArrayKeys),
         })
       },
       vendor: '@falcondev-oss/trpc-typed-form-data',
@@ -69,17 +67,20 @@ export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, an
     // input is undefined when FormData is used
     if (type === 'subscription' || type === 'query' || input) return next()
 
-    const formData = await getRawInput()
+    const formData = (await getRawInput()) as FormData & {
+      [typedFormDataSymbol]: TypedFormDataSymbolPayload
+    }
     if (!formData || !(formData instanceof FormData)) return next()
 
     const json = formData.get(TRANSFER_DATA_KEY)
     if (typeof json !== 'string') return next()
 
-    const parsed = trpc._config.transformer.output.deserialize(JSON.parse(json)) as
-      | object
+    const payload = trpc._config.transformer.output.deserialize(JSON.parse(json)) as
+      | TypedFormDataSymbolPayload
       | undefined
-    if (!parsed) return next()
-    ;(formData as FormData & { [typedFormDataSymbol]: unknown })[typedFormDataSymbol] = parsed
+    if (!payload) return next()
+
+    formData[typedFormDataSymbol] = payload
     formData.delete(TRANSFER_DATA_KEY)
 
     return next()
