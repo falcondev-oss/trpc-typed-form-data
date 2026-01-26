@@ -9,7 +9,7 @@ import { observable } from '@trpc/server/observable'
 import { TRANSFER_DATA_KEY, typedFormDataSymbol } from './internal'
 
 function isFileArray(value: unknown): value is File[] {
-  return Array.isArray(value) && value.every((v) => v instanceof File)
+  return Array.isArray(value) && value.length > 0 && value.every((v) => v instanceof File)
 }
 
 export function createTypedFormData<T extends object>(data: T) {
