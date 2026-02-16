@@ -1,15 +1,12 @@
 import type { TRPCLink } from '@trpc/client'
 import type { TransformerOptions } from '@trpc/client/unstable-internals'
 import type { AnyTRPCRouter } from '@trpc/server'
-import type { TypedFormDataSymbolPayload } from './internal'
+import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 import { isFormData } from '@trpc/client'
 import { getTransformer } from '@trpc/client/unstable-internals'
 import { observable } from '@trpc/server/observable'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')
-export type TypedFormData<T extends object> = FormData & {
-  [typedFormDataSymbol]: T
-}
 
 function isFileArray(value: unknown): value is File[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => v instanceof File)
@@ -36,7 +33,7 @@ export function createTypedFormData<T extends object>(data: T) {
     } else formData.set(key, value, value.name)
   }
 
-  return formData as TypedFormData<T>
+  return formData as unknown as TypedFormData<T>
 }
 
 export function typedFormDataLink<TRouter extends AnyTRPCRouter>(

@@ -1,11 +1,8 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { TRPCRootObject } from '@trpc/server'
-import type { TypedFormDataSymbolPayload } from './internal'
+import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')
-export type TypedFormData<T extends object> = FormData & {
-  [typedFormDataSymbol]: T
-}
 
 function parseFormDataFiles(formData: FormData, fileArrayKeys: string[]) {
   const output = {} as Record<string, File | File[] | null | undefined>
