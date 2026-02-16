@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { TRPCRootObject } from '@trpc/server'
-import type { AnyMiddlewareFunction } from '@trpc/server/unstable-core-do-not-import'
 import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
+import { initTRPC } from '@trpc/server/unstable-core-do-not-import'
 export type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')
@@ -62,7 +62,7 @@ export function typedFormData<S extends StandardSchemaV1<object>>(
   }
 }
 
-export function typedFormDataMiddleware<
+export function createTypedFormDataPlugin<
   Trpc extends Pick<TRPCRootObject<any, any, any, any>, '_config'>,
 >(
   trpc: Trpc,
@@ -73,28 +73,32 @@ export function typedFormDataMiddleware<
      */
     transferDataKey?: string
   },
-): AnyMiddlewareFunction {
-  return async ({ input, getRawInput, next, type }) => {
-    // input is undefined when FormData is used
-    if (type === 'subscription' || type === 'query' || input) return next()
+) {
+  const t = initTRPC.create()
 
-    const formData = (await getRawInput()) as FormData & {
-      [typedFormDataSymbol]: TypedFormDataSymbolPayload
-    }
-    if (!formData || !(formData instanceof FormData)) return next()
+  return {
+    middleware: t.procedure.use(async ({ input, getRawInput, next, type }) => {
+      // input is undefined when FormData is used
+      if (type === 'subscription' || type === 'query' || input) return next()
 
-    const transferKey = opts?.transferDataKey ?? '~data'
-    const json = formData.get(transferKey)
-    if (typeof json !== 'string') return next()
+      const formData = (await getRawInput()) as FormData & {
+        [typedFormDataSymbol]: TypedFormDataSymbolPayload
+      }
+      if (!formData || !(formData instanceof FormData)) return next()
 
-    const payload = trpc._config.transformer.output.deserialize(JSON.parse(json)) as
-      | TypedFormDataSymbolPayload
-      | undefined
-    if (!payload) return next()
+      const transferKey = opts?.transferDataKey ?? '~data'
+      const json = formData.get(transferKey)
+      if (typeof json !== 'string') return next()
 
-    formData[typedFormDataSymbol] = payload
-    formData.delete(transferKey)
+      const payload = trpc._config.transformer.output.deserialize(JSON.parse(json)) as
+        | TypedFormDataSymbolPayload
+        | undefined
+      if (!payload) return next()
 
-    return next()
+      formData[typedFormDataSymbol] = payload
+      formData.delete(transferKey)
+
+      return next()
+    }),
   }
 }

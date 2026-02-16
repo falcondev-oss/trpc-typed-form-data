@@ -18,8 +18,9 @@ import { initTRPC } from '@trpc/server'
 import { z } from 'zod'
 
 const trpc = initTRPC.create()
+const typedFormDataPlugin = createTypedFormDataPlugin(trpc) // 👈 create plugin instance
 
-const procedure = trpc.procedure.use(typedFormDataMiddleware(trpc)) // 👈 add middleware
+const procedure = trpc.procedure.concat(typedFormDataPlugin.middleware) // 👈 add middleware to procedure
 
 const router = trpc.router({
   upload: procedure
