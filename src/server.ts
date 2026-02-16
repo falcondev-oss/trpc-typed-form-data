@@ -1,8 +1,11 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { TRPCRootObject } from '@trpc/server'
-import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
-import { TRANSFER_DATA_KEY, typedFormDataSymbol } from './internal'
-export type { TypedFormData } from './internal'
+import type { TypedFormDataSymbolPayload } from './internal'
+
+export const typedFormDataSymbol = Symbol('TypedFormData')
+export type TypedFormData<T extends object> = FormData & {
+  [typedFormDataSymbol]: T
+}
 
 function parseFormDataFiles(formData: FormData, fileArrayKeys: string[]) {
   const output = {} as Record<string, File | File[] | null | undefined>
@@ -62,6 +65,13 @@ export function typedFormData<S extends StandardSchemaV1<object>>(
 
 export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, any, any>>(
   trpc: Trpc,
+  opts?: {
+    /**
+     * The field used to transfer serialized data in the FormData.
+     * @default '~data'
+     */
+    transferDataKey?: string
+  },
 ) {
   return trpc.middleware(async ({ input, getRawInput, next, type }) => {
     // input is undefined when FormData is used
@@ -72,7 +82,8 @@ export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, an
     }
     if (!formData || !(formData instanceof FormData)) return next()
 
-    const json = formData.get(TRANSFER_DATA_KEY)
+    const transferKey = opts?.transferDataKey ?? '~data'
+    const json = formData.get(transferKey)
     if (typeof json !== 'string') return next()
 
     const payload = trpc._config.transformer.output.deserialize(JSON.parse(json)) as
@@ -81,7 +92,7 @@ export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, an
     if (!payload) return next()
 
     formData[typedFormDataSymbol] = payload
-    formData.delete(TRANSFER_DATA_KEY)
+    formData.delete(transferKey)
 
     return next()
   })

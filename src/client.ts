@@ -1,12 +1,15 @@
 import type { TRPCLink } from '@trpc/client'
 import type { TransformerOptions } from '@trpc/client/unstable-internals'
 import type { AnyTRPCRouter } from '@trpc/server'
-import type { TypedFormData } from '.'
 import type { TypedFormDataSymbolPayload } from './internal'
 import { isFormData } from '@trpc/client'
 import { getTransformer } from '@trpc/client/unstable-internals'
 import { observable } from '@trpc/server/observable'
-import { TRANSFER_DATA_KEY, typedFormDataSymbol } from './internal'
+
+export const typedFormDataSymbol = Symbol('TypedFormData')
+export type TypedFormData<T extends object> = FormData & {
+  [typedFormDataSymbol]: T
+}
 
 function isFileArray(value: unknown): value is File[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => v instanceof File)
@@ -37,7 +40,13 @@ export function createTypedFormData<T extends object>(data: T) {
 }
 
 export function typedFormDataLink<TRouter extends AnyTRPCRouter>(
-  opts?: TransformerOptions<TRouter['_def']['_config']['$types']>,
+  opts?: TransformerOptions<TRouter['_def']['_config']['$types']> & {
+    /**
+     * The field used to transfer serialized data in the FormData.
+     * @default '~data'
+     */
+    transferDataKey?: string
+  },
 ): TRPCLink<TRouter> {
   return () => {
     return ({ next, op }) => {
@@ -46,7 +55,7 @@ export function typedFormDataLink<TRouter extends AnyTRPCRouter>(
           const payload = op.input[typedFormDataSymbol] as TypedFormDataSymbolPayload
           if (payload)
             op.input.append(
-              TRANSFER_DATA_KEY,
+              opts?.transferDataKey ?? '~data',
               JSON.stringify(getTransformer(opts?.transformer).input.serialize(payload)),
             )
         }
