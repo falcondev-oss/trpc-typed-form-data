@@ -5,6 +5,7 @@ import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 import { isFormData } from '@trpc/client'
 import { getTransformer } from '@trpc/client/unstable-internals'
 import { observable } from '@trpc/server/observable'
+export type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')
 

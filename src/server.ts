@@ -1,6 +1,8 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { TRPCRootObject } from '@trpc/server'
+import type { AnyMiddlewareFunction } from '@trpc/server/unstable-core-do-not-import'
 import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
+export type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')
 
@@ -60,7 +62,9 @@ export function typedFormData<S extends StandardSchemaV1<object>>(
   }
 }
 
-export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, any, any>>(
+export function typedFormDataMiddleware<
+  Trpc extends Pick<TRPCRootObject<any, any, any, any>, '_config'>,
+>(
   trpc: Trpc,
   opts?: {
     /**
@@ -69,8 +73,8 @@ export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, an
      */
     transferDataKey?: string
   },
-) {
-  return trpc.middleware(async ({ input, getRawInput, next, type }) => {
+): AnyMiddlewareFunction {
+  return async ({ input, getRawInput, next, type }) => {
     // input is undefined when FormData is used
     if (type === 'subscription' || type === 'query' || input) return next()
 
@@ -92,5 +96,5 @@ export function typedFormDataMiddleware<Trpc extends TRPCRootObject<any, any, an
     formData.delete(transferKey)
 
     return next()
-  })
+  }
 }
