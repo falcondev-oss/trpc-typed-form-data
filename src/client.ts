@@ -7,7 +7,8 @@ import { getTransformer } from '@trpc/client/unstable-internals'
 import { observable } from '@trpc/server/observable'
 export type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
-export const typedFormDataSymbol = Symbol('TypedFormData')
+// use keyed symbol to avoid issues with bundler code splitting
+export const typedFormDataSymbol = Symbol.for('@falcondev-oss/trpc-typed-form-data/TypedFormData')
 
 function isFileArray(value: unknown): value is File[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => v instanceof File)
