@@ -13,7 +13,7 @@ npm install @falcondev-oss/trpc-typed-form-data
 ### Server
 
 ```ts
-import { typedFormData, typedFormDataMiddleware } from '@falcondev-oss/trpc-typed-formdata/server'
+import { typedFormData, typedFormDataMiddleware } from '@falcondev-oss/trpc-typed-form-data/server'
 import { initTRPC } from '@trpc/server'
 import { z } from 'zod'
 
@@ -44,7 +44,7 @@ const router = trpc.router({
 ### Client
 
 ```ts
-import { createTypedFormData, typedFormDataLink } from '@falcondev-oss/trpc-typed-formdata/client'
+import { createTypedFormData, typedFormDataLink } from '@falcondev-oss/trpc-typed-form-data/client'
 import { createTRPCClient, httpLink } from '@trpc/client'
 
 const trpc = createTRPCClient<AppRouter>({
