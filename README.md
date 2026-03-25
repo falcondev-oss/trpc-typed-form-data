@@ -64,3 +64,18 @@ await trpc.upload.mutate(
   }),
 )
 ```
+
+### React Native
+
+```ts
+// url from e.g. expo-file-system, expo-image-picker or similar libraries
+const fileUrl = 'file:///path/to/file.txt'
+
+await trpc.upload.mutate(
+  createTypedFormData({
+    // input is properly typed here as well
+    userId: '123',
+    file: await ReactNativeFile.fromUrl(fileUrl, 'file.txt'), // 👈 create ReactNativeFile from URL
+  }),
+)
+```

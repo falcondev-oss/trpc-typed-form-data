@@ -14,6 +14,38 @@ function isFileArray(value: unknown): value is File[] {
   return Array.isArray(value) && value.length > 0 && value.every((v) => v instanceof File)
 }
 
+export class ReactNativeFile extends File {
+  readonly uri
+
+  private constructor(
+    fileBits: BlobPart[],
+    fileName: string,
+    options: FilePropertyBag & {
+      uri: string
+    },
+  ) {
+    super(fileBits, fileName, options)
+    this.uri = options.uri
+  }
+
+  static async fromUrl(url: string, fileName?: string) {
+    const res = await fetch(url)
+    const blob = await res.blob()
+    const file = new ReactNativeFile([blob], fileName ?? 'file', {
+      uri: url,
+      type: blob.type,
+    })
+
+    // workaround for https://github.com/expo/expo/issues/35512
+    return new Proxy(file, {
+      set(target, p, newValue, receiver) {
+        if (p === 'name') return true
+        return Reflect.set(target, p, newValue, receiver)
+      },
+    })
+  }
+}
+
 export function createTypedFormData<T extends object>(data: T) {
   const formData = new FormData() as FormData & {
     [typedFormDataSymbol]: TypedFormDataSymbolPayload
@@ -30,9 +62,9 @@ export function createTypedFormData<T extends object>(data: T) {
     }
 
     if (Array.isArray(value)) {
-      for (const file of value) formData.append(key, file)
+      for (const file of value) formData.append(key, file, file.name)
       formData[typedFormDataSymbol].fileArrayKeys.push(key)
-    } else formData.set(key, value)
+    } else formData.set(key, value, value.name)
   }
 
   return formData as unknown as TypedFormData<T>
