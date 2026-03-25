@@ -30,9 +30,9 @@ export function createTypedFormData<T extends object>(data: T) {
     }
 
     if (Array.isArray(value)) {
-      for (const file of value) formData.append(key, file, file.name)
+      for (const file of value) formData.append(key, file)
       formData[typedFormDataSymbol].fileArrayKeys.push(key)
-    } else formData.set(key, value, value.name)
+    } else formData.set(key, value)
   }
 
   return formData as unknown as TypedFormData<T>
