@@ -2,7 +2,7 @@
   "name": "@falcondev-oss/trpc-typed-form-data",
   "type": "module",
   "version": "0.4.1",
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.33.0",
   "description": "Type-safe integration of FormData with tRPC using Standard Schema.",
   "license": "MIT",
   "repository": "github:falcondev-oss/trpc-typed-form-data",
@@ -40,7 +40,7 @@
     "dist"
   ],
   "engines": {
-    "node": "24",
+    "node": ">=24",
     "pnpm": "10"
   },
   "scripts": {
@@ -51,17 +51,17 @@
     "lint:fix": "eslint --fix --cache . && prettier --write --cache ."
   },
   "peerDependencies": {
-    "@trpc/client": "^11.8.1",
-    "@trpc/server": "^11.8.1"
+    "@trpc/client": "^11",
+    "@trpc/server": "^11"
   },
   "dependencies": {
     "@standard-schema/spec": "^1.1.0",
-    "type-fest": "^5.4.1"
+    "type-fest": "^5.5.0"
   },
   "devDependencies": {
     "@falcondev-oss/configs": "^5.0.2",
-    "eslint": "^9.39.2",
-    "prettier": "^3.7.4",
+    "eslint": "^9.39.4",
+    "prettier": "^3.8.1",
     "tsdown": "0.20.0-beta.3",
     "typescript": "^5.9.3"
   }
