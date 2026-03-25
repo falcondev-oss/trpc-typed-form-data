@@ -1,7 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { TRPCRootObject } from '@trpc/server'
+import type { CombinedDataTransformer, TRPCRootObject } from '@trpc/server'
 import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
-import { initTRPC } from '@trpc/server/unstable-core-do-not-import'
+import { initTRPC, TRPCError } from '@trpc/server/unstable-core-do-not-import'
 export type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')
@@ -90,15 +90,22 @@ export function createTypedFormDataPlugin<
       const json = formData.get(transferKey)
       if (typeof json !== 'string') return next()
 
-      const payload = trpc._config.transformer.output.deserialize(JSON.parse(json)) as
-        | TypedFormDataSymbolPayload
-        | undefined
-      if (!payload) return next()
-
-      formData[typedFormDataSymbol] = payload
+      formData[typedFormDataSymbol] = safeParsePayload(trpc._config.transformer, json)
       formData.delete(transferKey)
 
       return next()
     }),
+  }
+}
+
+function safeParsePayload(transformer: CombinedDataTransformer, json: string) {
+  try {
+    return transformer.output.deserialize(JSON.parse(json)) as TypedFormDataSymbolPayload
+  } catch(err) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Failed to parse typed FormData payload. Make sure the data is serialized using the same transformer on the client.',
+      cause: err instanceof Error ? err : undefined,
+    })
   }
 }
