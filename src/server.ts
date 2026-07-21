@@ -2,6 +2,8 @@ import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { CombinedDataTransformer, TRPCRootObject } from '@trpc/server'
 import type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 import { initTRPC, TRPCError } from '@trpc/server/unstable-core-do-not-import'
+export type { FileValidationOptions, FileValue } from './file'
+export { file, isFile } from './file'
 export type { TypedFormData, TypedFormDataSymbolPayload } from './internal'
 
 export const typedFormDataSymbol = Symbol('TypedFormData')

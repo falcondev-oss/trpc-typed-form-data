@@ -2,7 +2,6 @@
   "name": "@falcondev-oss/trpc-typed-form-data",
   "type": "module",
   "version": "0.4.3",
-  "packageManager": "pnpm@10.33.0",
   "description": "Type-safe integration of FormData with tRPC using Standard Schema.",
   "license": "MIT",
   "repository": "github:falcondev-oss/trpc-typed-form-data",
@@ -19,11 +18,17 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./zod": "./src/zod.ts"
   },
   "publishConfig": {
     "exports": {
       "./package.json": "./package.json",
+      ".": {
+        "types": "./dist/index.d.mts",
+        "import": "./dist/index.mjs",
+        "default": "./dist/index.mjs"
+      },
       "./client": {
         "types": "./dist/client.d.mts",
         "import": "./dist/client.mjs",
@@ -33,6 +38,11 @@
         "types": "./dist/server.d.mts",
         "import": "./dist/server.mjs",
         "default": "./dist/server.mjs"
+      },
+      "./zod": {
+        "types": "./dist/zod.d.mts",
+        "import": "./dist/zod.mjs",
+        "default": "./dist/zod.mjs"
       }
     }
   },
@@ -40,8 +50,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=24",
-    "pnpm": "10"
+    "node": ">=24"
   },
   "scripts": {
     "build": "tsdown",
@@ -52,17 +61,30 @@
   },
   "peerDependencies": {
     "@trpc/client": "^11",
-    "@trpc/server": "^11"
+    "@trpc/server": "^11",
+    "zod": "^4"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
   },
   "dependencies": {
-    "@standard-schema/spec": "^1.1.0",
-    "type-fest": "^5.5.0"
+    "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
-    "@falcondev-oss/configs": "^5.0.2",
-    "eslint": "^9.39.4",
-    "prettier": "^3.8.1",
-    "tsdown": "0.20.0-beta.3",
-    "typescript": "^5.9.3"
+    "@falcondev-oss/configs": "^6.0.6",
+    "eslint": "^10.7.0",
+    "prettier": "^3.9.5",
+    "tsdown": "0.22.12",
+    "typescript": "^7.0.2",
+    "zod": "^4.4.3"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11",
+      "onFail": "warn"
+    }
   }
 }
