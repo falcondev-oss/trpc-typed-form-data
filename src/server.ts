@@ -103,10 +103,11 @@ export function createTypedFormDataPlugin<
 function safeParsePayload(transformer: CombinedDataTransformer, json: string) {
   try {
     return transformer.output.deserialize(JSON.parse(json)) as TypedFormDataSymbolPayload
-  } catch(err) {
+  } catch (err) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Failed to parse typed FormData payload. Make sure the data is serialized using the same transformer on the client.',
+      message:
+        'Failed to parse typed FormData payload. Make sure the data is serialized using the same transformer on the client.',
       cause: err instanceof Error ? err : undefined,
     })
   }

@@ -5,6 +5,7 @@ export default eslintConfig({
   tsconfigPath: './tsconfig.json',
 }).append({
   ignores: [
+    'README.md',
     'node_modules/',
     'dist/',
     '.nuxt/',

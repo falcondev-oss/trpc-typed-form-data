@@ -43,28 +43,6 @@ function isFileArray(value: unknown): value is File[] {
  * ```
  */
 export class ReactNativeFile extends File {
-  readonly uri: string
-
-  /**
-   * @param props.uri - Local file URI from the picker (e.g. `file:///…`). Used for the upload.
-   * @param props.name - File name, e.g. `asset.fileName`. Sent as the multipart filename.
-   * @param props.type - MIME type, e.g. `asset.mimeType` (`image/jpeg`).
-   * @param props.size - File size in bytes, e.g. `asset.fileSize`. Enables size checks like
-   * `file({ maxSize })` / `z.file().max()`, which would otherwise see a size of `0`.
-   */
-  constructor(props: { uri: string; name: string; type?: string; size?: number }) {
-    super([], props.name, { type: props.type })
-    this.uri = props.uri
-
-    // `File.name`/`File.size` are read-only getters. Expo's fetch/FormData polyfill reassigns
-    // `name`, which throws in strict mode (https://github.com/expo/expo/issues/35512). Shadow both
-    // with writable own props so those assignments no-op, and so `size` reports the real value for
-    // `z.file().min()/max()` checks (the empty blob would otherwise report 0).
-    Object.defineProperty(this, 'name', { value: props.name, writable: true, configurable: true })
-    if (props.size != null)
-      Object.defineProperty(this, 'size', { value: props.size, writable: true, configurable: true })
-  }
-
   /**
    * Build a `ReactNativeFile` from a remote URL. Sends a `HEAD` request to read the file's
    * `content-type` and `content-length` — the body is not downloaded; the upload streams from `url`.
@@ -85,6 +63,28 @@ export class ReactNativeFile extends File {
       type: res.headers.get('content-type') ?? undefined,
       size: Number(res.headers.get('content-length')) || undefined,
     })
+  }
+
+  readonly uri: string
+
+  /**
+   * @param props.uri - Local file URI from the picker (e.g. `file:///…`). Used for the upload.
+   * @param props.name - File name, e.g. `asset.fileName`. Sent as the multipart filename.
+   * @param props.type - MIME type, e.g. `asset.mimeType` (`image/jpeg`).
+   * @param props.size - File size in bytes, e.g. `asset.fileSize`. Enables size checks like
+   * `file({ maxSize })` / `z.file().max()`, which would otherwise see a size of `0`.
+   */
+  constructor(props: { uri: string; name: string; type?: string; size?: number }) {
+    super([], props.name, { type: props.type })
+    this.uri = props.uri
+
+    // `File.name`/`File.size` are read-only getters. Expo's fetch/FormData polyfill reassigns
+    // `name`, which throws in strict mode (https://github.com/expo/expo/issues/35512). Shadow both
+    // with writable own props so those assignments no-op, and so `size` reports the real value for
+    // `z.file().min()/max()` checks (the empty blob would otherwise report 0).
+    Object.defineProperty(this, 'name', { value: props.name, writable: true, configurable: true })
+    if (props.size != null)
+      Object.defineProperty(this, 'size', { value: props.size, writable: true, configurable: true })
   }
 }
 
@@ -122,6 +122,7 @@ export function typedFormDataLink<TRouter extends AnyTRPCRouter>(
   },
 ): TRPCLink<TRouter> {
   return () => {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     return ({ next, op }) => {
       return observable((observer) => {
         if (isFormData(op.input) && typedFormDataSymbol in op.input) {

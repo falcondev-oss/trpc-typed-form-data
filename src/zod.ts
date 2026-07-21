@@ -43,7 +43,8 @@ export function file(opts?: FileValidationOptions) {
     const result = schema['~standard'].validate(value)
     if (result instanceof Promise) throw new TypeError('file() validation must be synchronous')
 
-    for (const issue of result.issues ?? [])
+    const issues = result.issues ?? []
+    for (const issue of issues)
       ctx.addIssue(typeof issue.message === 'string' ? issue.message : 'Invalid file')
   })
 }
