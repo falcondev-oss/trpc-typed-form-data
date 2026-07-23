@@ -88,6 +88,19 @@ export class ReactNativeFile extends File {
   }
 }
 
+/**
+ * React Native's `FormData` streams a part from its `uri` and never reads a `Blob`'s bytes.
+ * A {@link ReactNativeFile} is a `File` subclass backed by an empty blob (`super([], …)`), so
+ * appending it directly uploads 0 bytes. Substitute the plain `{ uri, name, type }` shape RN
+ * streams from instead. `ReactNativeFile` only ever exists on React Native, so this branch never
+ * runs against a DOM `FormData` (where the value is a real `File` with actual bytes).
+ */
+function toFormDataFile(file: File): Blob {
+  if (file instanceof ReactNativeFile)
+    return { uri: file.uri, name: file.name, type: file.type } as unknown as Blob
+  return file
+}
+
 export function createTypedFormData<T extends object>(data: T) {
   const formData = new FormData() as FormData & {
     [typedFormDataSymbol]: TypedFormDataSymbolPayload
@@ -104,9 +117,9 @@ export function createTypedFormData<T extends object>(data: T) {
     }
 
     if (Array.isArray(value)) {
-      for (const file of value) formData.append(key, file, file.name)
+      for (const file of value) formData.append(key, toFormDataFile(file), file.name)
       formData[typedFormDataSymbol].fileArrayKeys.push(key)
-    } else formData.set(key, value, value.name)
+    } else formData.set(key, toFormDataFile(value), value.name)
   }
 
   return formData as unknown as TypedFormData<T>
