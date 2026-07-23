@@ -92,12 +92,28 @@ export class ReactNativeFile extends File {
  * React Native's `FormData` streams a part from its `uri` and never reads a `Blob`'s bytes.
  * A {@link ReactNativeFile} is a `File` subclass backed by an empty blob (`super([], …)`), so
  * appending it directly uploads 0 bytes. Substitute the plain `{ uri, name, type }` shape RN
- * streams from instead. `ReactNativeFile` only ever exists on React Native, so this branch never
- * runs against a DOM `FormData` (where the value is a real `File` with actual bytes).
+ * streams from instead.
+ *
+ * Expo installs `expo/fetch` as the global `fetch`, and its `FormData` handling does NOT stream from
+ * `uri` — it only accepts a part that is a string, a `Blob`, or an object exposing a `bytes()`
+ * method, and throws `Unsupported FormDataPart implementation` otherwise. So the part also carries
+ * `bytes()`, which reads the real file back through `fetch(uri)`. React Native's built-in `FormData`
+ * ignores `bytes()` and streams from `uri`; expo/fetch ignores `uri` and calls `bytes()`.
+ *
+ * `ReactNativeFile` only ever exists on React Native, so this branch never runs against a DOM
+ * `FormData` (where the value is a real `File` with actual bytes).
  */
 function toFormDataFile(file: File): Blob {
   if (file instanceof ReactNativeFile)
-    return { uri: file.uri, name: file.name, type: file.type } as unknown as Blob
+    return {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+      bytes: async () => {
+        const res = await fetch(file.uri)
+        return new Uint8Array(await res.arrayBuffer())
+      },
+    } as unknown as Blob
   return file
 }
 
